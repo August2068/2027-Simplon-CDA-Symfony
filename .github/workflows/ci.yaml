@@ -69,12 +69,12 @@ jobs:
             db:
                 image: mariadb:10.6
                 env:
-                    MYSQL_ROOT_PASSWORD: root
+                    MYSQL_ROOT_PASSWORD: { { secrets.MYSQL_ROOT_PASSWORD } }
                 ports:
                     - 3306:3306
 
         env:
-            DATABASE_URL: "mysql://root:root@127.0.0.1:3306/harmonia?serverVersion=10.6.25-MariaDB&charset=utf8mb4"
+            DATABASE_URL: { { secrets.DATABASE_URL } }
 
         steps:
             - name: Checkout code
