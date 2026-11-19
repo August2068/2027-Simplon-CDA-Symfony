@@ -2,106 +2,106 @@ name: CI de test pour le Back
 on: [push]
 
 jobs:
-    install:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-            - name: Installer PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: "8.4"
-                  extensions: pdo_mysql
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_mysql
 
-            - name: Dépendances
-              run: composer install
+      - name: Dependances
+        run: composer install
 
-            - name: Mise en cache
-              uses: actions/cache@v5
-              with:
-                  path: |
-                      vendor
-                      assets/vendor
-                  key: deps-${{ hashFiles('composer.lock', 'importmap.php') }}
+      - name: Mise en cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            vendor
+            assets/vendor
+          key: deps-${{ hashFiles('composer.lock', 'importmap.php') }}
 
-    lint:
-        needs: install
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
+  lint:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-            - name: Installer PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: "8.4"
-                  extensions: pdo_mysql
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_mysql
 
-            - name: Récupération du cache
-              uses: actions/cache/restore@v5
-              with:
-                  path: |
-                      vendor
-                      assets/vendor
-                  key: deps-${{ hashFiles('composer.lock', 'importmap.php') }}
+      - name: Recuperation du cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            vendor
+            assets/vendor
+          key: deps-${{ hashFiles('composer.lock', 'importmap.php') }}
 
-            - name: Lint du YAML
-              run: php bin/console lint:yaml config
+      - name: Lint du YAML
+        run: php bin/console lint:yaml config
 
-            - name: Lint des templates Twig
-              run: php bin/console lint:twig templates
+      - name: Lint des templates Twig
+        run: php bin/console lint:twig templates
 
-            - name: Lint de la config des services et du typage
-              run: php bin/console lint:container
+      - name: Lint de la config des services et du typage
+        run: php bin/console lint:container
 
-            - name: PHP CS Fixer
-              run: vendor/bin/php-cs-fixer fix --dry-run --diff
+      - name: PHP CS Fixer
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
 
-            - name: PHPStan
-              run: vendor/bin/phpstan analyse
-              continue-on-error: true
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse
+        continue-on-error: true
 
-    test:
-        needs: lint
-        runs-on: ubuntu-latest
-        services:
-            db:
-                image: mariadb:10.6
-                env:
-                    MYSQL_ROOT_PASSWORD: root
-                ports:
-                    - 3306:3306
-
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mariadb:10.6
         env:
-            DATABASE_URL: "mysql://root:root@127.0.0.1:3306/harmonia?serverVersion=10.6.25-MariaDB&charset=utf8mb4"
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
+    env:
+      DATABASE_URL: "mysql://root:root@127.0.0.1:3306/harmonia?serverVersion=10.6.25-MariaDB&charset=utf8mb4"
 
-            - name: Installer PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: "8.4"
-                  extensions: pdo_mysql, intl
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-            - name: Récupérer vendor depuis le cache
-              uses: actions/cache/restore@v5
-              with:
-                  path: |
-                      vendor
-                      assets/vendor
-                  key: deps-${{ hashFiles('composer.lock', 'importmap.php') }}
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_mysql, intl
 
-            - name: Créer la base de test
-              run: php bin/console doctrine:database:create --if-not-exists --env=test
+      - name: Recuperer vendor depuis le cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            vendor
+            assets/vendor
+          key: deps-${{ hashFiles('composer.lock', 'importmap.php') }}
 
-            - name: Jouer les migrations
-              run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
+      - name: Creer la base de test
+        run: php bin/console doctrine:database:create --if-not-exists --env=test
 
-            - name: Charger les données de test
-              run: mysql -h 127.0.0.1 -P 3306 -uroot -proot harmonia_test < docker/harmonia.sql
+      - name: Faire les migrations
+        run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
 
-            - name: Tests
-              run: php bin/phpunit
+      - name: Charger les donnees de test
+        run: mysql -h 127.0.0.1 -P 3306 -uroot -proot harmonia_test < docker/harmonia.sql
+
+      - name: Tests
+        run: php bin/phpunit
