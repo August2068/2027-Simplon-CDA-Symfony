@@ -10,12 +10,11 @@ jobs:
     install:
         runs-on: ubuntu-latest
         steps:
-            - name: create env file
-              run: |
-                  touch .env
-
             - name: Checkout code
               uses: actions/checkout@v6
+
+            - name: create env file
+              run: touch .env
 
             - name: Installer PHP
               uses: shivammathur/setup-php@v2
@@ -40,6 +39,9 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v6
+
+            - name: create env file
+              run: touch .env
 
             - name: Installer PHP
               uses: shivammathur/setup-php@v2
@@ -129,6 +131,9 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v6
+
+            - name: create env file
+              run: touch .env
 
             - name: Installer PHP
               uses: shivammathur/setup-php@v2
