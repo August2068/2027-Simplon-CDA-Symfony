@@ -55,15 +55,56 @@ jobs:
             - name: Lint de la config des services et du typage
               run: php bin/console lint:container
 
-            - name: PHP CS Fixer
-              run: vendor/bin/php-cs-fixer fix --dry-run --diff
+    phpstan:
+        needs: install
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+
+            - name: Installer PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: "8.4"
+                  extensions: pdo_mysql
+
+            - name: Recuperation du cache
+              uses: actions/cache/restore@v5
+              with:
+                  path: |
+                      vendor
+                      assets/vendor
+                  key: deps-${{ hashFiles('composer.lock', 'importmap.php') }}
 
             - name: PHPStan
               run: vendor/bin/phpstan analyse
-              continue-on-error: true
+
+    cs-fixer:
+        needs: install
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+
+            - name: Installer PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: "8.4"
+                  extensions: pdo_mysql
+
+            - name: Recuperation du cache
+              uses: actions/cache/restore@v5
+              with:
+                  path: |
+                      vendor
+                      assets/vendor
+                  key: deps-${{ hashFiles('composer.lock', 'importmap.php') }}
+
+            - name: PHP CS Fixer
+              run: vendor/bin/php-cs-fixer fix --dry-run --diff
 
     test:
-        needs: lint
+        needs: [lint, phpstan, cs-fixer]
         runs-on: ubuntu-latest
         services:
             db:
