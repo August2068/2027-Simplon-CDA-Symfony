@@ -1,10 +1,19 @@
 name: CI de test pour le Back
 on: [push]
 
+env:
+    APP_SECRET: CI
+    DEFAULT_URI: ${{secrets.DATABASE_URI}}
+    DATABASE_URL: ${{secrets.DATABASE_URL}}
+
 jobs:
     install:
         runs-on: ubuntu-latest
         steps:
+            - name: create env file
+              run: |
+                  touch .env
+
             - name: Checkout code
               uses: actions/checkout@v6
 
