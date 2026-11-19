@@ -5,6 +5,7 @@ env:
     APP_SECRET: CI
     DEFAULT_URI: ${{secrets.DATABASE_URI}}
     DATABASE_URL: ${{secrets.DATABASE_URL}}
+    KERNEL_CLASS: ${{secrets.KERNEL_CLASS}}
 
 jobs:
     install:
